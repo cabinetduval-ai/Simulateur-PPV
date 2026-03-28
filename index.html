@@ -403,34 +403,40 @@ function checkLicense(){
   msg.className = 'lic-msg loading';
   msg.textContent = '';
 
-  fetch(LICENSE_API_URL + '?code=' + encodeURIComponent(code) + '&t=' + Date.now())
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if(data.valid){
-        inp.classList.add('success');
-        msg.className = 'lic-msg ok';
-        msg.textContent = '✓ Accès autorisé — Bienvenue ' + data.prenom + ' ' + data.nom;
-        setTimeout(function(){
-          injectBadge(data.prenom, data.nom);
-          document.getElementById('lic-overlay').classList.add('hidden');
-        }, 1200);
-      } else {
-        btn.disabled = false;
-        btn.innerHTML = 'Accéder à l'outil';
-        inp.classList.add('error');
-        setTimeout(function(){ inp.classList.remove('error'); }, 500);
-        msg.className = 'lic-msg err';
-        if(data.reason === 'expired')  msg.textContent = '⚠ Code expiré — contactez Duval Avocats';
-        else if(data.reason === 'inactive') msg.textContent = '⛔ Accès désactivé — contactez Duval Avocats';
-        else msg.textContent = '✗ Code invalide — vérifiez votre saisie';
-      }
-    })
-    .catch(function(){
+  // JSONP — compatible Google Apps Script
+  var cbName = 'cb_' + Date.now();
+  window[cbName] = function(data) {
+    delete window[cbName];
+    document.getElementById('jsonp_script') && document.getElementById('jsonp_script').remove();
+    if(data.valid){
+      inp.classList.add('success');
+      msg.className = 'lic-msg ok';
+      msg.textContent = '✓ Accès autorisé — Bienvenue ' + data.prenom + ' ' + data.nom;
+      setTimeout(function(){
+        injectBadge(data.prenom, data.nom);
+        document.getElementById('lic-overlay').classList.add('hidden');
+      }, 1200);
+    } else {
       btn.disabled = false;
-      btn.innerHTML = 'Accéder à l'outil';
+      btn.innerHTML = 'Accéder à l\'outil';
+      inp.classList.add('error');
+      setTimeout(function(){ inp.classList.remove('error'); }, 500);
       msg.className = 'lic-msg err';
-      msg.textContent = '⚠ Erreur réseau — réessayez dans un instant';
-    });
+      if(data.reason === 'expired')  msg.textContent = '⚠ Code expiré — contactez Duval Avocats';
+      else if(data.reason === 'inactive') msg.textContent = '⛔ Accès désactivé — contactez Duval Avocats';
+      else msg.textContent = '✗ Code invalide — vérifiez votre saisie';
+    }
+  };
+  var s = document.createElement('script');
+  s.id = 'jsonp_script';
+  s.onerror = function(){
+    btn.disabled = false;
+    btn.innerHTML = 'Accéder à l\'outil';
+    msg.className = 'lic-msg err';
+    msg.textContent = '⚠ Erreur réseau — réessayez dans un instant';
+  };
+  s.src = LICENSE_API_URL + '?code=' + encodeURIComponent(code) + '&callback=' + cbName + '&t=' + Date.now();
+  document.head.appendChild(s);
 }
 
 // ============================================================
