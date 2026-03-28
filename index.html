@@ -418,7 +418,7 @@ function checkLicense(){
       }, 1200);
     } else {
       btn.disabled = false;
-      btn.innerHTML = 'Accéder à l\'outil';
+      btn.innerHTML = "Accéder à l'outil";
       inp.classList.add('error');
       setTimeout(function(){ inp.classList.remove('error'); }, 500);
       msg.className = 'lic-msg err';
@@ -431,7 +431,7 @@ function checkLicense(){
   s.id = 'jsonp_script';
   s.onerror = function(){
     btn.disabled = false;
-    btn.innerHTML = 'Accéder à l\'outil';
+    btn.innerHTML = "Accéder à l'outil";
     msg.className = 'lic-msg err';
     msg.textContent = '⚠ Erreur réseau — réessayez dans un instant';
   };
